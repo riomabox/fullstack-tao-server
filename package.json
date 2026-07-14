@@ -1,0 +1,40 @@
+{
+        "name": "backend",
+        "version": "1.0.0",
+        "description": "<div align=\"center\">",
+        "main": "index.js",
+        "directories": {
+                "test": "tests"
+        },
+        "scripts": {
+                "test": "echo \"Error: no test specified\" && exit 1",
+                "dev": "tsx watch src/index.ts",
+                "build": "tsc",
+                "start": "node dist/index.js"
+        },
+        "repository": {
+                "type": "git",
+                "url": "git+https://github.com/riomabox/fullstack-tao-server.git"
+        },
+        "keywords": [],
+        "author": "",
+        "license": "ISC",
+        "type": "commonjs",
+        "bugs": {
+                "url": "https://github.com/riomabox/fullstack-tao-server/issues"
+        },
+        "homepage": "https://github.com/riomabox/fullstack-tao-server#readme",
+        "dependencies": {
+                "dotenv": "^17.4.2",
+                "drizzle-orm": "^1.0.0-rc.4",
+                "express": "^5.2.1",
+                "postgres": "^3.4.9"
+        },
+        "devDependencies": {
+                "@types/express": "^5.0.6",
+                "@types/node": "^26.1.1",
+                "drizzle-kit": "^1.0.0-rc.4",
+                "tsx": "^4.23.1",
+                "typescript": "^7.0.2"
+        }
+}

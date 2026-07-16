@@ -6,7 +6,7 @@ const prompts = pgTable("prompts", {
         slug: varchar("slug", { length: 100 }).notNull().unique(),
         color: varchar("color", { length: 7 }), // hex color
         type: varchar("type", { length: 10 }),
-        started_date: timestamp("started_date").defaultNow().notNull(),
+        started_date: timestamp("started_date"),
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

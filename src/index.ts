@@ -3,6 +3,7 @@ import { env } from "./config/env";
 import db from "./db/index";
 import models from "./models";
 import { lt, desc, eq, and } from "drizzle-orm";
+import { getCurrentDate } from "./dates";
 
 const { prompts, answers } = models;
 
@@ -29,7 +30,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.get("/prompts", authenticate, async (req: Request, res: Response) => {
-        const currentDate = new Date();
+        const currentDate = getCurrentDate();
 
         let prompt;
         try {

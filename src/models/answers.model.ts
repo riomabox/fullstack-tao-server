@@ -1,5 +1,4 @@
 import { pgTable, uuid, varchar, timestamp } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
 import prompts from "./prompts.model";
 
 const answers = pgTable("answers", {
@@ -9,16 +8,5 @@ const answers = pgTable("answers", {
         createdAt: timestamp("created_at").defaultNow().notNull(),
         updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });
-
-export const promptsRelations = relations(prompts, ({ many }) => ({
-        answers: many(answers),
-}));
-
-export const answersRelations = relations(answers, ({ one }) => ({
-        prompt: one(prompts, {
-                fields: [answers.prompt_id],
-                references: [prompts.id],
-        }),
-}));
 
 export default answers;

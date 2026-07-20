@@ -2,9 +2,9 @@ import express, { Request, Response } from "express";
 import { env } from "./config/env";
 import db from "./db/index";
 import models from "./models";
-import { lt, desc } from "drizzle-orm";
+import { lt, desc, eq } from "drizzle-orm";
 
-const { prompts } = models;
+const { prompts, answers } = models;
 
 const app = express();
 const port = env.PORT;
@@ -25,7 +25,18 @@ app.get("/prompts", async (req: Request, res: Response) => {
                 .where(lt(prompts.started_date, currentDate))
                 .orderBy(desc(prompts.started_date))
                 .limit(1);
-        res.json(prompt);
+
+        // const hasAnswered = await db
+        //         .select()
+        //         .from(answers)
+        //         .where(eq(answers.user_id, user.id), eq(answers.prompt_id, prompt.id));
+
+        // if (hasAnswered) {
+        //         return res.json({ ...prompt, answers: [] });
+        // }
+
+        const resultAnswers = await db.select().from(answers).where(eq(answers.prompt_id, prompt.id));
+        return res.status(200).json({ ...prompt, answers: resultAnswers });
 });
 
 app.listen(port, () => {

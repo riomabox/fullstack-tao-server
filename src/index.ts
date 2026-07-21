@@ -32,37 +32,73 @@ app.get("/", (req: Request, res: Response) => {
 app.get("/prompts", authenticate, async (req: Request, res: Response) => {
         const currentDate = getCurrentDate();
 
-        let prompt;
-        try {
-                [prompt] = await db
+        // let prompt;
+        // try {
+        //         [prompt] = await db
+        //                 .select()
+        //                 .from(prompts)
+        //                 .where(lt(prompts.started_date, currentDate))
+        //                 .orderBy(desc(prompts.started_date))
+        //                 .limit(1);
+        // } catch (err) {
+        //         console.error("Failed to query prompts:", err);
+        //         return res.status(500).json({ message: "Database query failed", error: String(err) });
+        // }
+
+        // if (!prompt) {
+        //         return res.status(404).json({ message: "No prompt found" });
+        // }
+
+        // const hasAnswered = await db
+        //         .select()
+        //         .from(answers)
+        //         .where(and(eq(answers.user_id, req.user.id), eq(answers.prompt_id, prompt.id)));
+
+        // if (hasAnswered.length === 0) {
+        //         return res.json({ ...prompt, answers: [] });
+        // }
+
+        // const resultAnswers = await db
+        //         .select()
+        //         .from(answers)
+        //         .where(and(eq(answers.user_id, req.user.id), eq(answers.prompt_id, prompt.id)));
+        const hasAnswered = await db.select().from(answers).where(eq(answers.user_id, req.user.id));
+
+        if (hasAnswered.length === 0) {
+                const [prompt] = await db
                         .select()
                         .from(prompts)
                         .where(lt(prompts.started_date, currentDate))
                         .orderBy(desc(prompts.started_date))
                         .limit(1);
-        } catch (err) {
-                console.error("Failed to query prompts:", err);
-                return res.status(500).json({ message: "Database query failed", error: String(err) });
-        }
-
-        if (!prompt) {
-                return res.status(404).json({ message: "No prompt found" });
-        }
-
-        const hasAnswered = await db
-                .select()
-                .from(answers)
-                .where(and(eq(answers.user_id, req.user.id), eq(answers.prompt_id, prompt.id)));
-
-        if (hasAnswered.length === 0) {
                 return res.json({ ...prompt, answers: [] });
         }
 
-        const resultAnswers = await db
+        const promptAndAnswers = await db
                 .select()
-                .from(answers)
-                .where(and(eq(answers.user_id, req.user.id), eq(answers.prompt_id, prompt.id)));
-        return res.status(200).json({ ...prompt, answers: resultAnswers });
+                .from(prompts)
+                .leftJoin(answers, and(eq(answers.user_id, req.user.id), eq(answers.prompt_id, prompts.id)))
+                .where(lt(prompts.started_date, currentDate))
+                .orderBy(desc(prompts.started_date));
+
+        const formattedPromptAndAnswers = {
+                prompt: null,
+                answers: [] as Array<Record<string, unknown>>,
+        };
+
+        promptAndAnswers.forEach((row) => {
+                if (!formattedPromptAndAnswers.prompt) {
+                        formattedPromptAndAnswers.prompt = row.prompts;
+                }
+
+                if (row.answers) {
+                        formattedPromptAndAnswers.answers.push(row.answers);
+                }
+        });
+
+        console.log("promptAndAnswers:", JSON.stringify(formattedPromptAndAnswers, null, 2));
+
+        return res.status(200).json(formattedPromptAndAnswers);
 });
 
 app.listen(port, () => {

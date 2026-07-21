@@ -2,7 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import { env } from "./config/env";
 import db from "./db/index";
 import models from "./models";
-import { lt, desc, eq, and } from "drizzle-orm";
+import { lt, desc, eq, and, asc } from "drizzle-orm";
 import { getCurrentDate } from "./dates";
 
 const { prompts, answers } = models;
@@ -32,31 +32,25 @@ app.get("/", (req: Request, res: Response) => {
 app.get("/prompts", authenticate, async (req: Request, res: Response) => {
         const currentDate = getCurrentDate();
 
-        const hasAnswered = await db.select().from(answers).where(eq(answers.user_id, req.user.id));
-
-        if (hasAnswered.length === 0) {
-                const [prompt] = await db
-                        .select()
-                        .from(prompts)
-                        .where(lt(prompts.started_date, currentDate))
-                        .orderBy(desc(prompts.started_date))
-                        .limit(1);
-                return res.json({ ...prompt, answers: [] });
-        }
-
-        const promptAndAnswers = await db
+        const currentPrompt = db
                 .select()
                 .from(prompts)
-                .leftJoin(answers, and(eq(answers.user_id, req.user.id), eq(answers.prompt_id, prompts.id)))
                 .where(lt(prompts.started_date, currentDate))
-                .orderBy(desc(prompts.started_date));
+                .orderBy(asc(prompts.started_date))
+                .limit(1)
+                .as("prompts");
+
+        const result = await db
+                .select()
+                .from(currentPrompt)
+                .leftJoin(answers, and(eq(currentPrompt.id, answers.prompt_id), eq(answers.user_id, req.user.id)));
 
         const formattedPromptAndAnswers = {
                 prompt: null,
                 answers: [] as Array<Record<string, unknown>>,
         };
 
-        promptAndAnswers.forEach((row) => {
+        result.forEach((row) => {
                 formattedPromptAndAnswers.prompt ??= row.prompts;
 
                 if (row.answers) {

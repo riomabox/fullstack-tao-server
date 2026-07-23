@@ -4,6 +4,7 @@ import db from "./db/index";
 import models from "./models";
 import { lt, desc, eq, and, asc } from "drizzle-orm";
 import { getCurrentDate } from "./dates";
+import { getPromptByDate } from "./repository/getCurrentPromptByDate";
 
 const { prompts, answers } = models;
 
@@ -31,34 +32,8 @@ app.get("/", (req: Request, res: Response) => {
 
 app.get("/prompts", authenticate, async (req: Request, res: Response) => {
         const currentDate = getCurrentDate();
-
-        const currentPrompt = db
-                .select()
-                .from(prompts)
-                .where(lt(prompts.started_date, currentDate))
-                .orderBy(asc(prompts.started_date))
-                .limit(1)
-                .as("prompts");
-
-        const result = await db
-                .select()
-                .from(currentPrompt)
-                .leftJoin(answers, and(eq(currentPrompt.id, answers.prompt_id), eq(answers.user_id, req.user.id)));
-
-        const formattedPromptAndAnswers = {
-                prompt: null,
-                answers: [] as Array<Record<string, unknown>>,
-        };
-
-        result.forEach((row) => {
-                formattedPromptAndAnswers.prompt ??= row.prompts;
-
-                if (row.answers) {
-                        formattedPromptAndAnswers.answers.push(row.answers);
-                }
-        });
-
-        return res.status(200).json(formattedPromptAndAnswers);
+        const promptAndAnswers = await getPromptByDate(currentDate, req.user);
+        return res.status(200).json(promptAndAnswers);
 });
 
 app.listen(port, () => {

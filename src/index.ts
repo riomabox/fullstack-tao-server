@@ -1,12 +1,8 @@
 import express, { Request, Response, NextFunction } from "express";
 import { env } from "./config/env";
-import db from "./db/index";
 import models from "./models";
-import { lt, desc, eq, and, asc } from "drizzle-orm";
 import { getCurrentDate } from "./dates";
-import { getPromptByDate } from "./repository/getCurrentPromptByDate";
-
-const { prompts, answers } = models;
+import promptRepository from "./repository/repository";
 
 const app = express();
 const port = env.PORT;
@@ -32,7 +28,7 @@ app.get("/", (req: Request, res: Response) => {
 
 app.get("/prompts", authenticate, async (req: Request, res: Response) => {
         const currentDate = getCurrentDate();
-        const promptAndAnswers = await getPromptByDate(currentDate, req.user);
+        const promptAndAnswers = await promptRepository.getPromptByDate(currentDate, req.user);
         return res.status(200).json(promptAndAnswers);
 });
 

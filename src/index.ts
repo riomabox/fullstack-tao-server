@@ -1,6 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
 import { env } from "./config/env";
-import models from "./models";
 import { getCurrentDate } from "./dates";
 import promptRepository from "./repository/repository";
 

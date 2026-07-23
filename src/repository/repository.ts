@@ -4,6 +4,13 @@ import models from "../models";
 
 const { prompts, answers } = models;
 
+function mapPromptToDomainObject(result) {
+        return {
+                prompt: result[0].prompts,
+                answers: result.map((r) => r.answers),
+        };
+}
+
 export default {
         async getPromptByDate(date, user) {
                 const currentPrompt = db
@@ -19,20 +26,6 @@ export default {
                         .from(currentPrompt)
                         .leftJoin(answers, and(eq(currentPrompt.id, answers.prompt_id), eq(answers.user_id, user.id)));
 
-                const formattedPromptAndAnswers = {
-                        prompt: null,
-                        answers: [] as Array<Record<string, unknown>>,
-                };
-
-                result.forEach((row) => {
-                        formattedPromptAndAnswers.prompt ??= row.prompts;
-
-                        if (row.answers) {
-                                formattedPromptAndAnswers.answers.push(row.answers);
-                        }
-                });
-
-                return formattedPromptAndAnswers;
+                return mapPromptToDomainObject(result);
         },
 };
-// export async function getPromptByDate(currentDate, user) {}

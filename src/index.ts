@@ -1,7 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import { env } from "./config/env";
-import { getCurrentDate } from "./dates";
-import promptRepository from "./repository/repository";
+import promptService from "./services";
 
 const app = express();
 const port = env.PORT;
@@ -26,9 +25,8 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.get("/prompts", authenticate, async (req: Request, res: Response) => {
-        const currentDate = getCurrentDate();
-        const promptAndAnswers = await promptRepository.getPromptByDate(currentDate, req.user);
-        return res.status(200).json(promptAndAnswers);
+        const prompt = await promptService.getCurrentPrompt(req.user);
+        return res.status(200).json(prompt);
 });
 
 app.listen(port, () => {
